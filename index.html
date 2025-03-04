@@ -1,1 +1,104 @@
-12222
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>2025 Canvas烟花特效</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            display: block;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworks"></canvas>
+
+    <script>
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置画布尺寸
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 烟花粒子类
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.radius = Math.random() * 2 + 1;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 5,
+                    y: (Math.random() - 0.5) * 5
+                };
+                this.alpha = 1;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.01;
+                this.draw();
+            }
+        }
+
+        // 烟花发射器
+        class Firework {
+            constructor() {
+                this.particles = [];
+                this.createParticles();
+            }
+
+            createParticles() {
+                for(let i = 0; i < 100; i++) {
+                    this.particles.push(new Particle(
+                        canvas.width / 2,
+                        canvas.height / 2
+                    ));
+                }
+            }
+
+            update() {
+                this.particles = this.particles.filter(p => p.alpha > 0);
+                this.particles.forEach(p => p.update());
+            }
+        }
+
+        // 动画循环
+        let firework = new Firework();
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            firework.update();
+            
+            // 自动生成新烟花
+            if(firework.particles.length === 0) {
+                firework = new Firework();
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

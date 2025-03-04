@@ -3,131 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <title>孙雨彤生日快乐</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
+        body {
             margin: 0;
-            padding: 0;
+            background: #000;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #text {
+            color: #fff;
+            font-size: 3em;
+            font-family: Arial;
+            text-align: center;
+            min-height: 100px;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20%;
+            display: flex;
+            gap: 30px;
+        }
+        .icon {
+            color: #fff;
+            font-size: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .icon:hover {
+            transform: scale(1.2);
         }
         canvas {
-            display: block;
-            background: #000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <canvas id="fireworks"></canvas>
+    <div id="text"></div>
+    <div class="controls">
+        <i class="icon fas fa-microphone" id="musicBtn"></i>
+        <i class="icon fas fa-fire" id="fireBtn"></i>
+    </div>
+    <canvas id="canvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('fireworks');
-        const ctx = canvas.getContext('2d');
+        // 文字动画‌:ml-citation{ref="2,5" data="citationList"}
+        const textElement = document.getElementById('text');
+        const message = "孙雨彤生日快乐";
+        let index = 0;
+
+        function typeWriter() {
+            if (index < message.length) {
+                textElement.innerHTML += message.charAt(index);
+                index++;
+                setTimeout(typeWriter, 300);
+            }
+        }
+        typeWriter();
+
+        // 音乐播放‌:ml-citation{ref="2,6" data="citationList"}
+        const musicBtn = document.getElementById('musicBtn');
+        const audio = new Audio('data:audio/mpeg;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkWgAI0wWs/ItAAAGDgY2AgA==');
         
-        // 设置画布尺寸
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        musicBtn.addEventListener('click', () => {
+            audio.play().catch(() => {});
+        });
 
-        // 文字烟花粒子类‌:ml-citation{ref="1,2" data="citationList"}
-        class TextParticle {
-            constructor(x, y, color) {
-                this.baseX = x;
-                this.baseY = y;
-                this.x = x + (Math.random() - 0.5) * 20;
-                this.y = y + (Math.random() - 0.5) * 20;
-                this.color = color || `hsl(${Math.random() * 360}, 100%, 50%)`;
-                this.radius = Math.random() * 2 + 1;
-                this.velocity = {
-                    x: (Math.random() - 0.5) * 5,
-                    y: (Math.random() - 1) * 5
-                };
-                this.alpha = 1;
-            }
+        // 烟花特效‌:ml-citation{ref="3,4" data="citationList"}
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-            draw() {
-                ctx.save();
-                ctx.globalAlpha = this.alpha;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                ctx.restore();
-            }
-
-            update() {
-                this.x += this.velocity.x;
-                this.y += this.velocity.y;
-                this.alpha -= 0.008;
-                this.draw();
-            }
-        }
-
-        // 文字初始化‌:ml-citation{ref="2,3" data="citationList"}
-        let textParticles = [];
-        function initText() {
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 60px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('孙雨彤生日快乐', canvas.width/2, canvas.height/2);
-            
-            // 获取文字像素数据‌:ml-citation{ref="4" data="citationList"}
-            const textData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-            for(let y=0; y<canvas.height; y+=5){
-                for(let x=0; x<canvas.width; x+=5){
-                    if(textData[(y * canvas.width + x) * 4 + 3] > 128){
-                        textParticles.push(new TextParticle(x, y));
-                    }
-                }
-            }
-        }
-
-        // 烟花发射器‌:ml-citation{ref="1,4" data="citationList"}
-        class Firework {
+        class Particle {
             constructor(x, y) {
-                this.particles = [];
-                this.createParticles(x, y);
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 6 - 3;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = `hsl(${Math.random()*360},100%,50%)`;
             }
-
-            createParticles(x, y) {
-                for(let i = 0; i < 50; i++) {
-                    this.particles.push(new TextParticle(x, y));
-                }
-            }
-
             update() {
-                this.particles = this.particles.filter(p => p.alpha > 0);
-                this.particles.forEach(p => p.update());
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.fill();
             }
         }
 
-        // 动画循环‌:ml-citation{ref="1,4" data="citationList"}
-        let fireworks = [];
+        let particles = [];
+        function createFirework(x, y) {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle(x, y));
+            }
+        }
+
         function animate() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 更新文字粒子
-            textParticles = textParticles.filter(p => p.alpha > 0);
-            textParticles.forEach(p => p.update());
-            
-            // 更新烟花
-            fireworks.forEach(f => f.update());
-            fireworks = fireworks.filter(f => f.particles.length > 0);
-            
-            // 自动生成新烟花
-            if(Math.random() < 0.05) {
-                const x = canvas.width/2 + (Math.random() - 0.5) * 400;
-                const y = canvas.height/2 + (Math.random() - 0.5) * 200;
-                fireworks.push(new Firework(x, y));
-            }
+            particles.forEach((p, i) => {
+                p.update();
+                p.draw();
+                if (p.size <= 0.2) particles.splice(i, 1);
+            });
             
             requestAnimationFrame(animate);
         }
-        
-        // 初始化
-        initText();
-        setTimeout(animate, 2000); // 延迟启动动画
+        animate();
+
+        // 烟花触发‌:ml-citation{ref="4,5" data="citationList"}
+        document.getElementById('fireBtn').addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            createFirework(e.clientX - rect.left, e.clientY - rect.top);
+        });
     </script>
 </body>
 </html>

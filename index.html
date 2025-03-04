@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>2025 Canvas烟花特效</title>
+    <title>孙雨彤生日快乐</title>
     <style>
         * {
             margin: 0;
@@ -29,16 +29,18 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // 烟花粒子类
-        class Particle {
+        // 文字烟花粒子类‌:ml-citation{ref="1,2" data="citationList"}
+        class TextParticle {
             constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
+                this.baseX = x;
+                this.baseY = y;
+                this.x = x + (Math.random() - 0.5) * 20;
+                this.y = y + (Math.random() - 0.5) * 20;
                 this.color = color || `hsl(${Math.random() * 360}, 100%, 50%)`;
                 this.radius = Math.random() * 2 + 1;
                 this.velocity = {
                     x: (Math.random() - 0.5) * 5,
-                    y: (Math.random() - 0.5) * 5
+                    y: (Math.random() - 1) * 5
                 };
                 this.alpha = 1;
             }
@@ -56,24 +58,40 @@
             update() {
                 this.x += this.velocity.x;
                 this.y += this.velocity.y;
-                this.alpha -= 0.01;
+                this.alpha -= 0.008;
                 this.draw();
             }
         }
 
-        // 烟花发射器
+        // 文字初始化‌:ml-citation{ref="2,3" data="citationList"}
+        let textParticles = [];
+        function initText() {
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('孙雨彤生日快乐', canvas.width/2, canvas.height/2);
+            
+            // 获取文字像素数据‌:ml-citation{ref="4" data="citationList"}
+            const textData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            for(let y=0; y<canvas.height; y+=5){
+                for(let x=0; x<canvas.width; x+=5){
+                    if(textData[(y * canvas.width + x) * 4 + 3] > 128){
+                        textParticles.push(new TextParticle(x, y));
+                    }
+                }
+            }
+        }
+
+        // 烟花发射器‌:ml-citation{ref="1,4" data="citationList"}
         class Firework {
-            constructor() {
+            constructor(x, y) {
                 this.particles = [];
-                this.createParticles();
+                this.createParticles(x, y);
             }
 
-            createParticles() {
-                for(let i = 0; i < 100; i++) {
-                    this.particles.push(new Particle(
-                        canvas.width / 2,
-                        canvas.height / 2
-                    ));
+            createParticles(x, y) {
+                for(let i = 0; i < 50; i++) {
+                    this.particles.push(new TextParticle(x, y));
                 }
             }
 
@@ -83,22 +101,33 @@
             }
         }
 
-        // 动画循环
-        let firework = new Firework();
+        // 动画循环‌:ml-citation{ref="1,4" data="citationList"}
+        let fireworks = [];
         function animate() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            firework.update();
+            // 更新文字粒子
+            textParticles = textParticles.filter(p => p.alpha > 0);
+            textParticles.forEach(p => p.update());
+            
+            // 更新烟花
+            fireworks.forEach(f => f.update());
+            fireworks = fireworks.filter(f => f.particles.length > 0);
             
             // 自动生成新烟花
-            if(firework.particles.length === 0) {
-                firework = new Firework();
+            if(Math.random() < 0.05) {
+                const x = canvas.width/2 + (Math.random() - 0.5) * 400;
+                const y = canvas.height/2 + (Math.random() - 0.5) * 200;
+                fireworks.push(new Firework(x, y));
             }
             
             requestAnimationFrame(animate);
         }
-        animate();
+        
+        // 初始化
+        initText();
+        setTimeout(animate, 2000); // 延迟启动动画
     </script>
 </body>
 </html>

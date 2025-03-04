@@ -13,34 +13,36 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            overflow: hidden; /* 修复滚动条问题‌:ml-citation{ref="4" data="citationList"} */
         }
         #text {
-            color: #fff;
+            color: #fff;  /* 确保文字可见‌:ml-citation{ref="5" data="citationList"} */
             font-size: 3em;
             font-family: Arial;
             text-align: center;
             min-height: 100px;
+            z-index: 2;  /* 层级高于canvas‌:ml-citation{ref="3" data="citationList"} */
         }
         .controls {
             position: fixed;
             bottom: 20%;
             display: flex;
             gap: 30px;
+            z-index: 3; /* 确保按钮可见‌:ml-citation{ref="4" data="citationList"} */
         }
         .icon {
             color: #fff;
             font-size: 40px;
             cursor: pointer;
             transition: 0.3s;
-        }
-        .icon:hover {
-            transform: scale(1.2);
+            text-shadow: 0 0 10px rgba(255,255,255,0.5); /* 增加可视性‌:ml-citation{ref="5" data="citationList"} */
         }
         canvas {
             position: fixed;
             top: 0;
             left: 0;
             pointer-events: none;
+            z-index: 1; /* 置于底层‌:ml-citation{ref="3" data="citationList"} */
         }
     </style>
 </head>
@@ -53,7 +55,7 @@
     <canvas id="canvas"></canvas>
 
     <script>
-        // 文字动画‌:ml-citation{ref="2,5" data="citationList"}
+        // 初始化文字动画‌:ml-citation{ref="6" data="citationList"}
         const textElement = document.getElementById('text');
         const message = "孙雨彤生日快乐";
         let index = 0;
@@ -63,23 +65,31 @@
                 textElement.innerHTML += message.charAt(index);
                 index++;
                 setTimeout(typeWriter, 300);
+            } else {
+                document.querySelector('.controls').style.opacity = 1; // 显示控制按钮‌:ml-citation{ref="4" data="citationList"}
             }
         }
-        typeWriter();
+        setTimeout(typeWriter, 500); // 延迟启动避免渲染阻塞‌:ml-citation{ref="2" data="citationList"}
 
-        // 音乐播放‌:ml-citation{ref="2,6" data="citationList"}
+        // 音频初始化‌:ml-citation{ref="7" data="citationList"}
         const musicBtn = document.getElementById('musicBtn');
         const audio = new Audio('data:audio/mpeg;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkWgAI0wWs/ItAAAGDgY2AgA==');
-        
+        audio.loop = true;
+
         musicBtn.addEventListener('click', () => {
             audio.play().catch(() => {});
         });
 
-        // 烟花特效‌:ml-citation{ref="3,4" data="citationList"}
+        // 烟花系统初始化‌:ml-citation{ref="3,8" data="citationList"}
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         class Particle {
             constructor(x, y) {
@@ -111,7 +121,7 @@
         }
 
         function animate() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // 降低背景覆盖透明度‌:ml-citation{ref="4" data="citationList"}
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             particles.forEach((p, i) => {
@@ -122,12 +132,11 @@
             
             requestAnimationFrame(animate);
         }
-        animate();
+        setTimeout(animate, 1000); // 延迟启动动画‌:ml-citation{ref="2" data="citationList"}
 
-        // 烟花触发‌:ml-citation{ref="4,5" data="citationList"}
+        // 交互事件绑定‌:ml-citation{ref="4" data="citationList"}
         document.getElementById('fireBtn').addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            createFirework(e.clientX - rect.left, e.clientY - rect.top);
+            createFirework(Math.random()*canvas.width, Math.random()*canvas.height);
         });
     </script>
 </body>
